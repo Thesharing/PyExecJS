@@ -96,17 +96,15 @@ class ExternalRuntime(AbstractRuntime):
 
             p = None
             try:
-                p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=self._cwd, universal_newlines=True)
-                input = self._compile(source)
-                if six.PY2:
-                    input = input.encode(sys.getfilesystemencoding())
+                p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=self._cwd, universal_newlines=False)
+                input = self._compile(source).encode(sys.getdefaultencoding())
                 stdoutdata, stderrdata = p.communicate(input=input)
                 ret = p.wait()
             finally:
                 del p
 
             self._fail_on_non_zero_status(ret, stdoutdata, stderrdata)
-            return stdoutdata
+            return stdoutdata.decode(sys.getdefaultencoding())
 
         def _exec_with_tempfile(self, source):
             (fd, filename) = tempfile.mkstemp(prefix='execjs', suffix='.js')
